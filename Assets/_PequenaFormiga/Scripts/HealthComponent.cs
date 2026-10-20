@@ -15,6 +15,12 @@ public class HealthComponent : MonoBehaviour
   public event Action OnDeath;
   public event Action<int,int> OnHealthChanged;
 
+  [ContextMenu("Teste 1: Dano 1")] 
+  private void TestDamage() => TakeDamage(1);
+
+  [ContextMenu("Teste 2: Cura 1")] 
+  private void TestHeal() => Heal(1);
+
   void Awake()
   {
     currHp = maxHp;
