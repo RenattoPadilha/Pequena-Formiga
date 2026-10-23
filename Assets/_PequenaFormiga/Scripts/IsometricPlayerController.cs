@@ -6,6 +6,15 @@ public class IsometricPlayerController : MonoBehaviour
 {
     [Header("Player Settings")]
     public float moveSpeed = 5f;
+    public float runSpeed = 8f;
+
+    [Header("Movement Smoothing")]
+    public float acceleration = 12f;
+    public float deceleration = 16f;
+
+    private Vector2 currentVelocity;
+    private bool isRunning;
+    private InputAction sprintAction;
 
     private Rigidbody2D rb;
     private Vector2 inputVector;
@@ -23,6 +32,7 @@ public class IsometricPlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         controls = new PlayerController();
+        sprintAction = controls.Player.Sprint;
     }
 
     private void OnEnable()
@@ -37,18 +47,48 @@ public class IsometricPlayerController : MonoBehaviour
         controls.Disable();
     }
 
+    
     private void FixedUpdate()
     {
+        // 1. Define a direção de movimento.
+        Vector2 moveDirection;
+
+        isRunning = sprintAction.IsPressed()
+            && inputVector.sqrMagnitude > 0.01f;
+
         if (!isoMovement)
         {
-            Vector2 moveDir = inputVector.normalized;
-            rb.MovePosition(rb.position + moveDir * moveSpeed * Time.fixedDeltaTime);
+            moveDirection = inputVector.normalized;
         }
         else
         {
-            Vector2 isoDirection = (isoRight * inputVector.x + isoUp * inputVector.y).normalized;
-            rb.MovePosition(rb.position + isoDirection * moveSpeed * Time.fixedDeltaTime);
+            moveDirection =
+                (isoRight * inputVector.x +
+                isoUp * inputVector.y).normalized;
         }
+
+        // 2. Define a velocidade máxima desejada.
+        float targetSpeed = isRunning ? runSpeed : moveSpeed;
+
+        // Sem direção de entrada, a velocidade desejada é zero.
+        Vector2 targetVelocity = moveDirection * targetSpeed;
+
+        // 3. Escolhe a taxa de aceleração ou desaceleração.
+        float rate = inputVector.sqrMagnitude > 0.01f
+            ? acceleration
+            : deceleration;
+
+        // 4. Aproxima suavemente a velocidade atual da desejada.
+        currentVelocity = Vector2.MoveTowards(
+            currentVelocity,
+            targetVelocity,
+            rate * Time.fixedDeltaTime
+        );
+
+        // 5. Aplica o movimento.
+        rb.MovePosition(
+            rb.position + currentVelocity * Time.fixedDeltaTime
+        );
 
         UpdateSpriteDirection(inputVector);
     }
