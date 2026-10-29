@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 45395117}
   - component: {fileID: 45395116}
   m_Layer: 5
-  m_Name: Phase Name
+  m_Name: Level Name
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -266,7 +266,7 @@ GameObject:
   m_Component:
   - component: {fileID: 399036237}
   m_Layer: 5
-  m_Name: Phases
+  m_Name: Level
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -615,7 +615,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PhaseTooltipController
   tooltip: {fileID: 917688981}
-  phaseNameLabel: {fileID: 45395116}
+  levelNameLabel: {fileID: 45395116}
   actionLabel: {fileID: 1591759171}
 --- !u!225 &917688981
 CanvasGroup:
@@ -642,7 +642,7 @@ GameObject:
   - component: {fileID: 1429336224}
   - component: {fileID: 1429336226}
   m_Layer: 5
-  m_Name: Phase 1
+  m_Name: Level 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -719,7 +719,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f72a6a4ee5fc8bd4bb4fa8f8872da963, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PhaseNode
-  phaseData: {fileID: 11400000, guid: 0c621419c7c0c744fa2e5015b74dce47, type: 2}
+  levelData: {fileID: 11400000, guid: 0c621419c7c0c744fa2e5015b74dce47, type: 2}
   playerAnchor: {fileID: 1925698449}
   tooltipAnchor: {fileID: 787604823}
 --- !u!1 &1591759169
@@ -1227,7 +1227,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PhaseSelectionController
   player: {fileID: 1781839783}
   tooltip: {fileID: 917688980}
-  allPhases:
+  allLevels:
   - {fileID: 1429336226}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

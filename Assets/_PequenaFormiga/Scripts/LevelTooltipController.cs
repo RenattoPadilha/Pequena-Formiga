@@ -1,10 +1,11 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
-public class PhaseTooltipController : MonoBehaviour
+public class LevelTooltipController : MonoBehaviour
 {
   [SerializeField] private CanvasGroup tooltip; 
-  [SerializeField] private TMP_Text phaseNameLabel;
+  [SerializeField] private TMP_Text levelNameLabel;
   [SerializeField] private TMP_Text actionLabel;
 
   private bool isValid = true;
@@ -12,7 +13,7 @@ public class PhaseTooltipController : MonoBehaviour
   void OnValidate()
   {
     if (!tooltip) Debug.LogWarning("Tooltip CanvasGroup not assigned", this);
-    if (!phaseNameLabel) Debug.LogWarning("Phase Name TMP_Text not assigned", this);
+    if (!levelNameLabel) Debug.LogWarning("Level Name TMP_Text not assigned", this);
     if (!actionLabel) Debug.LogWarning("Action TMP_Text not assigned", this);
   }
 
@@ -23,9 +24,9 @@ public class PhaseTooltipController : MonoBehaviour
       Debug.LogError("Tooltip CanvasGroup not assigned", this);
       isValid = false;
     }
-    if (!phaseNameLabel)
+    if (!levelNameLabel)
     {
-      Debug.LogError("Phase Name TMP_Text not assigned", this);
+      Debug.LogError("Level Name TMP_Text not assigned", this);
       isValid = false;
     }
     if (!actionLabel)
@@ -38,16 +39,16 @@ public class PhaseTooltipController : MonoBehaviour
       Hide();
   }
 
-  public void Show (PhaseData phaseData)
+  public void Show(LevelData levelData)
   {
-    if (!phaseData)
-    {
-      Debug.LogWarning("Tooltip Show called with null PhaseData", this);
-      return;
-    }
     if (!isValid)
       return;
-    phaseNameLabel.text = $"Fase {phaseData.PhaseNumber}: {phaseData.PhaseName}";
+    if (!levelData)
+    {
+      Debug.LogError("Tooltip Show called with null LevelData", this);
+      return;
+    }
+    levelNameLabel.text = $"Fase {levelData.LevelNumber}: {levelData.LevelName}";
     actionLabel.text = "Pressione para Entrar";
     tooltip.alpha = 1;
   }

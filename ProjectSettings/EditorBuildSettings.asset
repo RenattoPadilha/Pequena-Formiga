@@ -15,7 +15,7 @@ EditorBuildSettings:
     path: Assets/_PequenaFormiga/Scenes/Test Scenes/MovementScene.unity
     guid: 8818b7b3dbe671d4593548044369891a
   - enabled: 1
-    path: Assets/_PequenaFormiga/Scenes/Phase1.unity
+    path: Assets/_PequenaFormiga/Scenes/Level_1.unity
     guid: 49258c9b747226d4aaecb2f222583e57
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

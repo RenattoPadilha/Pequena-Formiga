@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62dbf5479933e7942b44877149b4a800, type: 3}
   m_Name: JardimSelvagem
   m_EditorClassIdentifier: Assembly-CSharp::PhaseData
-  phaseName: Jardim Selvagem
-  phaseNumber: 1
+  levelName: Jardim Selvagem
+  levelNumber: 1
   sceneName: MovementScene

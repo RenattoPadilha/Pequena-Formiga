@@ -1,28 +1,29 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
-public class PhaseNode : MonoBehaviour
+public class LevelNode : MonoBehaviour
 {
-  [SerializeField] private PhaseData phaseData;
+  [SerializeField] private LevelData levelData;
   [SerializeField] private Transform playerAnchor;
   [SerializeField] private Transform tooltipAnchor;
 
-  public PhaseData Data => phaseData;
+  public LevelData Data => levelData;
   public Transform PlayerAnchor => playerAnchor;
   public Transform TooltipAnchor => tooltipAnchor;
-  public bool IsValid => phaseData && playerAnchor && tooltipAnchor;
+  public bool IsValid => levelData && playerAnchor && tooltipAnchor;
 
   void OnValidate()
   {
-    if (!phaseData) Debug.LogWarning("Phase Data not assigned", this);
+    if (!levelData) Debug.LogWarning("Level Data not assigned", this);
     if (!playerAnchor) Debug.LogWarning("Player Anchor not assigned", this);
     if (!tooltipAnchor) Debug.LogWarning("Tooltip Anchor not assigned", this);
   }
 
   void Awake()
   {
-    if (!phaseData)
+    if (!levelData)
     {
-      Debug.LogError("Phase Data not assigned", this);
+      Debug.LogError("Level Data not assigned", this);
     }
     if (!playerAnchor)
     {

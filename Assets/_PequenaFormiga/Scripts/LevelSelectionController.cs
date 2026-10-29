@@ -2,14 +2,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
-public class PhaseSelectionController : MonoBehaviour
+public class LevelSelectionController : MonoBehaviour
 {
   [SerializeField] private Transform player;
-  [SerializeField] private PhaseTooltipController tooltip;
-  [SerializeField] private PhaseNode[] allPhases;
+  [SerializeField] private LevelTooltipController tooltip;
+  [SerializeField] private LevelNode[] allLevels;
 
-  private PhaseNode selectedPhase;
+  private LevelNode selectedLevel;
   private bool isLoading = false;
 
   private PlayerController controls;
@@ -28,7 +29,7 @@ public class PhaseSelectionController : MonoBehaviour
       Debug.LogError("Tooltip Script not assigned", this);
       isValid = false;
     }
-    if (!ValidatePhaseArray())
+    if (!ValidateLevelArray())
     {
       isValid = false;
     }
@@ -67,21 +68,21 @@ public class PhaseSelectionController : MonoBehaviour
   {
     int currLevel = GameSession.LastLevel;
 
-    PhaseNode startNode = System.Array.Find(allPhases, phase => phase.Data.PhaseNumber == currLevel);
+    LevelNode startNode = System.Array.Find(allLevels, level => level.Data.LevelNumber == currLevel);
 
     if (!startNode)
     {
       if (currLevel >= 0)
-        Debug.LogWarning($"Level {currLevel} not found on map, using first phase", this);
-      startNode = allPhases[0];
+        Debug.LogWarning($"Level {currLevel} not found on map, using first level", this);
+      startNode = allLevels[0];
     }
 
-    SelectPhase (startNode);
+    SelectLevel (startNode);
   }
 
-  private void SelectPhase(PhaseNode node)
+  private void SelectLevel(LevelNode node)
   {
-    selectedPhase = node;
+    selectedLevel = node;
     player.position = node.PlayerAnchor.position;
     tooltip.transform.position = node.TooltipAnchor.position;
     tooltip.Show(node.Data);
@@ -91,50 +92,50 @@ public class PhaseSelectionController : MonoBehaviour
   {
     if (isLoading)
       return;
-    if (!selectedPhase)
+    if (!selectedLevel)
       return;
 
     isLoading = true;
-    SceneManager.LoadScene(selectedPhase.Data.SceneName);
+    SceneManager.LoadScene(selectedLevel.Data.SceneName);
   } 
 
-  private bool ValidatePhaseArray()
+  private bool ValidateLevelArray()
   {
-    if (!(allPhases.Length > 0))
+    if (!(allLevels.Length > 0))
     {
-      Debug.LogError($"Phase Array Empty", this);
+      Debug.LogError($"Level Array Empty", this);
       return false;
     }
 
     bool isValid = true;
 
-    HashSet<int> phaseNumbers = new HashSet<int>();
+    HashSet<int> levelNumbers = new HashSet<int>();
 
-    for (int i = 0; i < allPhases.Length; i++)
+    for (int i = 0; i < allLevels.Length; i++)
     {
-      var phaseNode = allPhases[i];
+      var levelNode = allLevels[i];
 
-      if (!phaseNode)
+      if (!levelNode)
       {
         Debug.LogError($"Null in {i+1}° array position", this);
         isValid = false;
         continue;
       }
 
-      if (!phaseNode.IsValid || !phaseNode.Data.IsValid)
+      if (!levelNode.IsValid || !levelNode.Data.IsValid)
       {
-        Debug.LogError($"Phase Node isn't configured correctly at {i+1}° array position\nNode Name: {phaseNode.name}", this);
+        Debug.LogError($"Level Node isn't configured correctly at {i+1}° array position\nNode Name: {levelNode.name}", this);
         isValid = false;
         continue;
       }
-      if (!Application.CanStreamedLevelBeLoaded(phaseNode.Data.SceneName))
+      if (!Application.CanStreamedLevelBeLoaded(levelNode.Data.SceneName))
       {
-        Debug.LogError($"Scene Name invalid in {i+1}° array position.\nNode Name: {phaseNode.name}\n-Scene Name: {phaseNode.Data.SceneName}", this);
+        Debug.LogError($"Scene Name invalid in {i+1}° array position.\nNode Name: {levelNode.name}\n-Scene Name: {levelNode.Data.SceneName}", this);
         isValid = false;
       }
-      if (!phaseNumbers.Add(phaseNode.Data.PhaseNumber))
+      if (!levelNumbers.Add(levelNode.Data.LevelNumber))
       {
-        Debug.LogError($"Phase Number duplicated in {i+1}° array position.\nNode Name: {phaseNode.name}\n- Phase Number: {phaseNode.Data.PhaseNumber}", this);
+        Debug.LogError($"Level Number duplicated in {i+1}° array position.\nNode Name: {levelNode.name}\n- Level Number: {levelNode.Data.LevelNumber}", this);
         isValid = false;
       }
     }

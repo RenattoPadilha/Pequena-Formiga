@@ -12,6 +12,5 @@ public static class GameSession
       return;
     }
     LastLevel = newLevel;
-    Debug.Log(newLevel);
   }
 }
