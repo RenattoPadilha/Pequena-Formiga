@@ -3,8 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class LevelController : MonoBehaviour
 {
-  // -1 means not configured. Once changed, the editor doesn't allow it to be set to -1 again, since it has already been configured
-  [Min(0)][SerializeField] private int lvlNumber = -1;
+  [SerializeField] private LevelData levelData;
   [SerializeField] private HealthComponent playerHealth;
   [SerializeField] private string mapSceneName;
 
@@ -18,9 +17,9 @@ public class LevelController : MonoBehaviour
       isValid = false;
     }
       
-    if (lvlNumber < 0)
+    if (!levelData || !levelData.IsValid)
     {
-      Debug.LogError("Level Number not assigned", this);
+      Debug.LogError("Level Data not assigned or incomplete", this);
       isValid = false;
     }
       
@@ -36,7 +35,7 @@ public class LevelController : MonoBehaviour
       return;
     }
     
-    GameSession.SetLastLevel(lvlNumber);
+    GameSession.SetLastLevel(levelData.LevelNumber);
   }
 
 
