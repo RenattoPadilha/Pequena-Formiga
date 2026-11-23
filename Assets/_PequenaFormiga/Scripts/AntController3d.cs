@@ -1,15 +1,21 @@
-
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
-public class AntController3D : MonoBehaviour
+public partial class AntController3d : MonoBehaviour
 {
+    private CapsuleCollider capsule;
+
     [Header("Movement")]
     [SerializeField] private float walkSpeed = 3f;
     [SerializeField] private float runSpeed = 6f;
     [SerializeField] private float acceleration = 12f;
     [SerializeField] private float deceleration = 16f;
+
+    
+    [Header("Input")]
+    private Vector2 moveInput;
+    private bool requireInputRelease;
 
     [Header("References")]
     [SerializeField] private Transform cameraTransform;
@@ -18,12 +24,15 @@ public class AntController3D : MonoBehaviour
     private Rigidbody rb;
     private Vector3 currentHorizontalVelocity;
     private Vector3 inputDirection;
+    private AntStamina stamina;
 
     public bool IsRunning { get; private set; }
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        capsule = GetComponent<CapsuleCollider>();
+        stamina = GetComponent<AntStamina>();
 
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.constraints |= RigidbodyConstraints.FreezeRotationX;
@@ -33,12 +42,31 @@ public class AntController3D : MonoBehaviour
     private void Update()
     {
         ReadInput();
+
+        if (Keyboard.current != null &&
+            Keyboard.current.qKey.wasPressedThisFrame)
+        {
+            if (isClimbing)
+            {
+                // Primeiro tenta sair pelo topo.
+                // Se não conseguir, tenta sair pela base.
+                if (!TryTransitionToTop())
+                {
+                    TryTransitionToGround();
+                }
+            }
+            else
+            {
+                TryStartClimbing();
+            }
+        }
     }
 
     private void ReadInput()
     {
         if (Keyboard.current == null)
         {
+            moveInput = Vector2.zero;
             inputDirection = Vector3.zero;
             IsRunning = false;
             return;
@@ -51,6 +79,8 @@ public class AntController3D : MonoBehaviour
         if (Keyboard.current.dKey.isPressed) x += 1f;
         if (Keyboard.current.sKey.isPressed) z -= 1f;
         if (Keyboard.current.wKey.isPressed) z += 1f;
+
+        moveInput = new Vector2(x, z).normalized;
 
         Vector3 forward = cameraTransform != null
             ? cameraTransform.forward
@@ -74,11 +104,61 @@ public class AntController3D : MonoBehaviour
             Keyboard.current.leftShiftKey.isPressed ||
             Keyboard.current.rightShiftKey.isPressed;
 
-        IsRunning = hasInput && shiftHeld;
+        if (requireInputRelease)
+        {
+            moveInput = Vector2.zero;
+            inputDirection = Vector3.zero;
+            IsRunning = false;
+
+            if (x == 0f && z == 0f)
+                requireInputRelease = false;
+
+            return;
+        }
+
+        IsRunning = hasInput && shiftHeld && stamina.CanRun;
     }
 
     private void FixedUpdate()
     {
+        bool wasGrounded = IsGrounded;
+
+        UpdateGroundedState();
+
+        UpdateFallDetection(wasGrounded);
+
+        bool shiftHeld =
+            Keyboard.current.leftShiftKey.isPressed ||
+            Keyboard.current.rightShiftKey.isPressed;
+
+        //float targetSpeed = IsRunning ? runSpeed : walkSpeed;
+
+        if (isClimbing)
+        {
+            Climb();
+            return;
+        }
+
+        // Consome fôlego durante a corrida.
+        if (IsRunning)
+        {
+            stamina.ConsumeRun(Time.fixedDeltaTime);
+
+            // Se o fôlego acabar, interrompe a corrida.
+            if (stamina.IsDepleted)
+            {
+                IsRunning = false;
+            }
+        }
+        // Recupera fôlego somente no chão e sem correr.
+        else if (
+            IsGrounded &&
+            (!shiftHeld || moveInput.sqrMagnitude < 0.001f)
+        )
+        {
+            stamina.Recover(Time.fixedDeltaTime);
+        }
+
         float targetSpeed = IsRunning ? runSpeed : walkSpeed;
 
         Vector3 targetVelocity = inputDirection * targetSpeed;
