@@ -24,6 +24,7 @@ public partial class AntController3d : MonoBehaviour
     private Rigidbody rb;
     private Vector3 currentHorizontalVelocity;
     private Vector3 inputDirection;
+    private AntStamina stamina;
 
     public bool IsRunning { get; private set; }
 
@@ -31,6 +32,7 @@ public partial class AntController3d : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         capsule = GetComponent<CapsuleCollider>();
+        stamina = GetComponent<AntStamina>();
 
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.constraints |= RigidbodyConstraints.FreezeRotationX;
@@ -45,9 +47,18 @@ public partial class AntController3d : MonoBehaviour
             Keyboard.current.qKey.wasPressedThisFrame)
         {
             if (isClimbing)
-                TryTransitionToTop();
+            {
+                // Primeiro tenta sair pelo topo.
+                // Se não conseguir, tenta sair pela base.
+                if (!TryTransitionToTop())
+                {
+                    TryTransitionToGround();
+                }
+            }
             else
+            {
                 TryStartClimbing();
+            }
         }
     }
 
@@ -105,11 +116,49 @@ public partial class AntController3d : MonoBehaviour
             return;
         }
 
-        IsRunning = hasInput && shiftHeld;
+        IsRunning = hasInput && shiftHeld && stamina.CanRun;
     }
 
     private void FixedUpdate()
     {
+        bool wasGrounded = IsGrounded;
+
+        UpdateGroundedState();
+
+        UpdateFallDetection(wasGrounded);
+
+        bool shiftHeld =
+            Keyboard.current.leftShiftKey.isPressed ||
+            Keyboard.current.rightShiftKey.isPressed;
+
+        //float targetSpeed = IsRunning ? runSpeed : walkSpeed;
+
+        if (isClimbing)
+        {
+            Climb();
+            return;
+        }
+
+        // Consome fôlego durante a corrida.
+        if (IsRunning)
+        {
+            stamina.ConsumeRun(Time.fixedDeltaTime);
+
+            // Se o fôlego acabar, interrompe a corrida.
+            if (stamina.IsDepleted)
+            {
+                IsRunning = false;
+            }
+        }
+        // Recupera fôlego somente no chão e sem correr.
+        else if (
+            IsGrounded &&
+            (!shiftHeld || moveInput.sqrMagnitude < 0.001f)
+        )
+        {
+            stamina.Recover(Time.fixedDeltaTime);
+        }
+
         float targetSpeed = IsRunning ? runSpeed : walkSpeed;
 
         Vector3 targetVelocity = inputDirection * targetSpeed;
@@ -117,12 +166,6 @@ public partial class AntController3d : MonoBehaviour
         bool hasInput = inputDirection.sqrMagnitude > 0.01f;
 
         float rate = hasInput ? acceleration : deceleration;
-
-        if (isClimbing)
-        {
-            Climb();
-            return;
-        }
 
         currentHorizontalVelocity = Vector3.MoveTowards(
             currentHorizontalVelocity,

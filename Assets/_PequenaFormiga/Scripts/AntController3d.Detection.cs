@@ -14,7 +14,9 @@ public partial class AntController3d
     [Header("Surface Following")]
     [SerializeField] private float surfaceCheckDistance = 0.8f;
 
-    private bool HasWallAtPosition(Vector3 position)
+    private bool HasWallAtPosition(
+        Vector3 position,
+        bool checkUpperEdge = false)
     {
         if (capsule == null || climbSurfaceCollider == null)
             return false;
@@ -39,7 +41,8 @@ public partial class AntController3d
         float probeHeightOffset =
             capsule.height * verticalScale * 0.35f;
 
-        colliderCenter -= climbUp * probeHeightOffset;
+        colliderCenter += climbUp *
+            (checkUpperEdge ? probeHeightOffset : -probeHeightOffset);
 
         Vector3 leftPosition =
             colliderCenter - climbRight * probeOffset;
@@ -259,6 +262,16 @@ public partial class AntController3d
 
             // Aceita apenas superfícies predominantemente horizontais.
             if (Vector3.Dot(hit.normal, Vector3.up) < 0.7f)
+                continue;
+
+            // A superfície precisa estar acima do centro do collider
+            // na direção de escalada.
+            float heightAboveAnt = Vector3.Dot(
+                hit.point - colliderCenter,
+                climbUp
+            );
+
+            if (heightAboveAnt <= 0.05f)
                 continue;
 
             if (hit.distance < closestDistance)
